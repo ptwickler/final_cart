@@ -1,12 +1,5 @@
 <?php
 
-
-
-
-/*ini_set('display_errors', 1);
-
-error_reporting(E_ALL);*/
-
 ob_start();
 
 
@@ -32,7 +25,7 @@ if (isset($_GET['out']) && $_GET['out']==1){
 
     //Add in a page reload so that the session_destroy() will take effect*/
 
-    $url = "http://" . $_SERVER['HTTP_HOST'] . "/final2_back_01/index.php";
+    $url = "http://" . $_SERVER['HTTP_HOST'] . "/final_cart/index.php";
 
     header("Location: ".$url) or die("Didn't work");
 }
@@ -54,20 +47,23 @@ if(isset($_SESSION['out_cart'])) {
     $item = $_SESSION['out_cart'];
 }
 
-include_once($_SERVER['DOCUMENT_ROOT'] ."/final2_back_01/template_top.inc");
+include_once($_SERVER['DOCUMENT_ROOT'] ."/final_cart/template_top.inc");
 
 
 // This array stores the machine names of the products. It needs to be appended if you want to add another
 // product to the store. The products.php file must also be appended to contain the new item's properties.
 $current_products = array('amethyst','quartzorb','wizard','catseye','dragon','elf');
 
-
+// This if statement tests for the username and passwords in the POST variable. If they are there, it activates the
+// login.
 if (isset($_POST['username']) && isset($_POST['password'])) {
 
     user_cred($_POST['username'],$_POST['password'],$_POST);
 
 }
 
+// Activates the register form if a user has submitted an username not in the accounts.txt list. As of now, blank
+// submissions of the login form also trigger the register form display.
 if (isset($_GET['register_new']) && $_GET['register_new'] == 1) {
 
     $register_display = register_display($_SESSION);
@@ -85,7 +81,7 @@ if (isset($_GET['checkout']) && $_GET['checkout'] ==1 ){
           <hr>
           <br>
           <br>
-            <table><tbody><th>Item</th><th>Quantity</th><th>Price</th>' . $out_table .  '</div></body></html>
+            <table><tbody><th>Item</th><th>Quantity</th><th>Price</th>' . $out_table .  '</div><br><br><br><br>
 <form name = "purchase" action="index.php?checkout=1" method="POST">
   <input type="text" hidden name="mail" value="1">
   <input type="submit" value="complete purchase">
@@ -103,15 +99,14 @@ if (isset($_GET['checkout']) && $_GET['checkout'] ==1 ){
 
         if ($thanks){
             echo $thanks;
-
         }
 
         if (!$thanks) {
-            echo "NOPE";
-
+            echo "There was a problem and we could not send your confirmation email";
         }
 
     }
+    echo '</body></html>';
 }
 
 else {

@@ -1,11 +1,10 @@
 <?php
 date_default_timezone_set ( 'America/New_York' );
+
 if (!isset($_SESSION)) {
     session_start();
 }
-ini_set('display_errors', 1);
 
-error_reporting(E_ALL);
 
 #----------------------#
 # Product List         #
@@ -67,14 +66,11 @@ $products = array(
 
 function add_to_cart($products,$item,$quantity,$cart){
 
-
-
-
         $item = $item;
         $products = $products;
         $_SESSION['out_cart'][$item]['name'] = $item;
         $_SESSION['out_cart'][$item]['quantity'] = $quantity;
-    $url = "http://" . $_SERVER['HTTP_HOST'] . "/final2_back_01/index.php";
+    $url = "http://" . $_SERVER['HTTP_HOST'] . "/final_cart/index.php";
     header("Location: " . $url) or die("Didn't work");
 
 
@@ -90,11 +86,11 @@ if (isset($_GET['prod_name']) && $_GET['prod_name'] != 1) {
 
     if ($_SESSION['sign_in'] == 1) {
         add_to_cart($products, $item, $quantity, $cart);
-        $url = "http://" . $_SERVER['HTTP_HOST'] . "/final2_back_01/index.php";
+        $url = "http://" . $_SERVER['HTTP_HOST'] . "/final_cart/index.php";
         header("Location: " . $url) or die("Didn't work");
     } else {
 
-        $url = "http://" . $_SERVER['HTTP_HOST'] . "/final2_back_01/index.php?signed=0";
+        $url = "http://" . $_SERVER['HTTP_HOST'] . "/final_cart/index.php?signed=0";
         header("Location: " . $url) or die("Didn't work");
     }
 }
@@ -234,7 +230,7 @@ function new_user($user,$pass,$email) {
     $n_pass = $pass;
     $n_email = $email;
 
-    $users_list = fopen('/Library/WebServer/Documents/final2_back_01/accounts.txt','a+');
+    $users_list = fopen('/Library/WebServer/Documents/final_cart/accounts.txt','a+');
 
     $user_values = array($n_user,$n_pass,$n_email);
 
@@ -332,7 +328,7 @@ function user_cred($username,$pw,$query=array()) {
        // the regular non-validation path from the form validation path.
        elseif (($name_test == '' || $name_test == null) && isset($_POST['email'])) {
            $_SESSION['valid']['name'] = 'name_error';
-           $url = "http://" . $_SERVER['HTTP_HOST'] . "/final2_back_01/index.php?register_new=1";
+           $url = "http://" . $_SERVER['HTTP_HOST'] . "/final_cart/index.php?register_new=1";
            header("Location: " . $url) or die("didn't redirect from login");
         }
 
@@ -344,7 +340,7 @@ function user_cred($username,$pw,$query=array()) {
         if($user_email == null || $email_check != true){
             $_SESSION['valid']['email'] = 'email_error';
 
-            $url = "http://" . $_SERVER['HTTP_HOST'] . "/final2_back_01/index.php?register_new=1";
+            $url = "http://" . $_SERVER['HTTP_HOST'] . "/final_cart/index.php?register_new=1";
             header("Location: " . $url) or die("didn't redirect from login");
 
         }
@@ -353,14 +349,14 @@ function user_cred($username,$pw,$query=array()) {
         if ($user_pw == null or !isset($user_pw)){
             $_SESSION['valid']['password'] = 'password_error';
 
-            $url = "http://" . $_SERVER['HTTP_HOST'] . "/final2_back_01/index.php?register_new=1";
+            $url = "http://" . $_SERVER['HTTP_HOST'] . "/final_cart/index.php?register_new=1";
             header("Location: " . $url) or die("didn't redirect from login");
         }
 
         new_user($user_name,$user_email,$user_pw);
 
         ob_clean();
-        $url = "http://" . $_SERVER['HTTP_HOST'] . "/final2_back_01/index.php";
+        $url = "http://" . $_SERVER['HTTP_HOST'] . "/final_cart/index.php";
         header("Location: " . $url) or die("didn't redirect from login");
     }
 
@@ -371,7 +367,7 @@ function user_cred($username,$pw,$query=array()) {
     $reg_link = 0; // Counter to limit the display of the "register here" verbiage.
     $pass_error = 0;
 
-    $user_list = file('/Library/WebServer/Documents/final2_back_01/accounts.txt');
+    $user_list = file('/Library/WebServer/Documents/final_cart/accounts.txt');
 
     // Iterates through the file testing each line for the username and password combo.
     for ($i = 0; $i < count($user_list); $i++){
@@ -393,7 +389,7 @@ function user_cred($username,$pw,$query=array()) {
                     if ($match) {
                         $_SESSION['sign_in'] = 1;
                         $_SESSION['username'] = $username;
-                        $url = "http://" . $_SERVER['HTTP_HOST'] . "/final2_back_01/index.php";
+                        $url = "http://" . $_SERVER['HTTP_HOST'] . "/final_cart/index.php";
                         ob_clean();
                         header("Location: " . $url) or die("didn't redirect from login");
 

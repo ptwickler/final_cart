@@ -36,12 +36,12 @@ if (isset($_SESSION['sign_in']) && $_SESSION['sign_in'] == 1) {
 
     }
 
-    print '<input type="submit" value="Complete Checkout" ></form>';
+    print '<input type="submit" value="Checkout" ></form>';
 }
 print '</div><!--end div.cart_display-->';
 
 
-echo '<!--<div class="banner">
+echo '<div class="banner">
         <img class="banner" src="img/banner.jpg">
       </div><!--end div.banner-->
 
