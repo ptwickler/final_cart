@@ -353,7 +353,7 @@ function user_cred($username,$pw,$query=array()) {
             header("Location: " . $url) or die("didn't redirect from login");
         }
 
-        new_user($user_name,$user_email,$user_pw);
+        new_user($user_name,$user_email,password_hash($user_pw,PASSWORD_DEFAULT));
 
         ob_clean();
         $url = "http://" . $_SERVER['HTTP_HOST'] . "/final_cart/index.php";
@@ -383,10 +383,10 @@ function user_cred($username,$pw,$query=array()) {
 
                 for ($p = 0; $p < count($line); $p++) {
 
-                   $pw_match =  preg_match('/^' . $pw . '$/', $line[$p], $match);
+                   $pw_match =  password_verify($pw, $line[2]);
 
 
-                    if ($match) {
+                    if ($pw_match) {
                         $_SESSION['sign_in'] = 1;
                         $_SESSION['username'] = $username;
                         $url = "http://" . $_SERVER['HTTP_HOST'] . "/final_cart/index.php";
@@ -394,7 +394,7 @@ function user_cred($username,$pw,$query=array()) {
                         header("Location: " . $url) or die("didn't redirect from login");
 
 
-                    } elseif ($matches && !$match) {
+                    } elseif ($matches && $pw_match == false) {
                        if($pass_error == 1)
                         echo '<span class="form_error">The password you entered is not correct</span>';
                         $pass_error++;

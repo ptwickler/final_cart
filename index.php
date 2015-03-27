@@ -1,5 +1,12 @@
 <?php
 
+/*
+ * The index page controls the user's path through the site. There are two different "modes" which will cause the
+ * page to display differently. First, the "normal" mode which is a user is either signed in, or not, but has not
+ * selected that they want to check out (products are displayed). Second, "checkout" mode. The user must be signed in to
+ * click the checkout button. If selected, the products are not displayed, but the user's items for purchase are.
+ */
+
 ob_start();
 
 
@@ -23,7 +30,7 @@ if (isset($_GET['out']) && $_GET['out']==1){
     // Finally, destroy the session.
     session_destroy();
 
-    //Add in a page reload so that the session_destroy() will take effect*/
+    //Add in a page reload so that the session_destroy() will take effect
 
     $url = "http://" . $_SERVER['HTTP_HOST'] . "/final_cart/index.php";
 
@@ -43,9 +50,9 @@ if (!isset($_SESSION['valid'])) {
 }
 
 
-if(isset($_SESSION['out_cart'])) {
+/*if(isset($_SESSION['out_cart'])) {
     $item = $_SESSION['out_cart'];
-}
+}*/
 
 include_once($_SERVER['DOCUMENT_ROOT'] ."/final_cart/template_top.inc");
 
@@ -92,7 +99,7 @@ if (isset($_GET['checkout']) && $_GET['checkout'] ==1 ){
 
 </div>';
 
-
+    // If the post variable "mail" is set and equals 1, send the confirmation email and display the confirmation message.
     if (isset($_POST['mail']) && $_POST['mail'] == 1) {
         $thanks = confirm_email($_SESSION['username'],$products);
 
@@ -109,6 +116,8 @@ if (isset($_GET['checkout']) && $_GET['checkout'] ==1 ){
     echo '</body></html>';
 }
 
+// If none of the other "special case" query strings are set, the script displays the products. That is, the site
+// is in "shopping mode".
 else {
     $disp = '';
 
