@@ -1,0 +1,107 @@
+
+body {
+    background-color: #cadef8;
+}
+
+.product_display {
+   /* border: 1px solid black;*/
+    width: 200px;
+    height: 200px;
+    position: relative;
+    display: inline-block;
+    margin: 10px;
+    float: left;
+    clear: right;
+}
+
+.add_to_cart {
+    position: relative;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.prod_price, .prod_weight, .prod_name {
+    text-align: center;
+}
+
+.prod_img {
+    width: 195px;
+    height: 195px;
+}
+
+.prod_img img {
+    width: 100%;
+    height:100%;
+}
+
+input.disp_name {
+    width: 195px;
+    outline: 0;
+    border: 0;
+    display: inline-block;
+    text-align: center;
+    background-color: #cadef8;
+}
+
+.total_price {
+    width: 20%;
+    position: relative;
+}
+
+.checkout_list {
+    border: 0;
+    background-color: #cadef8;
+}
+
+span.require_auth {
+    color: red;
+    font-weight: bold;
+}
+
+.checkout_quantity {
+    text-align: center;
+}
+
+table {
+    border-collapse: collapse;
+}
+td {
+    padding: 4px 0 4px 0;
+    border-top: 1px solid #000;
+    border-bottom: 1px solid #000;
+    border-collapse: collapse;
+}
+
+div.wrapper {
+    /*border: 1px solid red;*/
+}
+
+div.cart_display {
+    position: relative;
+    float: left;
+}
+
+div.login {
+    margin-right: 20px;
+    position: relative;
+    float: right;
+}
+
+div.banner {
+    margin-right: 100px;
+    width: 316px;
+    height: 46px;
+    position: absolute;
+    left: 300px;
+
+}
+span.form_error {
+    font-weight: bold;
+    color: red;
+}
+
+div.sign_in_form {
+    position: relative;
+    float: right;
+    clear: right;
+}
