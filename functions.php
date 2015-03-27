@@ -61,44 +61,10 @@ $products = array(
 );
 
 
-// Grabs the items out of the cart and gets their relevant details from the array in products.php which it then pushes
-// into the "out cart" which will be used to create the shopping cart page.
-
-function add_to_cart($products,$item,$quantity,$cart){
-
-        $item = $item;
-        $products = $products;
-        $_SESSION['out_cart'][$item]['name'] = $item;
-        $_SESSION['out_cart'][$item]['quantity'] = $quantity;
-    $url = "http://" . $_SERVER['HTTP_HOST'] . "/final_cart/index.php";
-    header("Location: " . $url) or die("Didn't work");
-
-
-
-
-}
-
-if (isset($_GET['prod_name']) && $_GET['prod_name'] != 1) {
-
-    $item = $_GET['item'];
-    $quantity = $_GET['quantity'];
-    $cart = $_SESSION['cart'];
-
-    if ($_SESSION['sign_in'] == 1) {
-        add_to_cart($products, $item, $quantity, $cart);
-        $url = "http://" . $_SERVER['HTTP_HOST'] . "/final_cart/index.php";
-        header("Location: " . $url) or die("Didn't work");
-    } else {
-
-        $url = "http://" . $_SERVER['HTTP_HOST'] . "/final_cart/index.php?signed=0";
-        header("Location: " . $url) or die("Didn't work");
-    }
-}
-
 #----------------------#
 # Functions  checkout  #
 #----------------------#
-// finish the out_cart indexing to pull in the items.n
+// finish the out_cart indexing to pull in the items.
 function confirm_email($user,$products) {
    // $items = $products;
     $message = "<html><head></head><body><br><br><br><br><br><br><br>" . $user.", thank you for buying this stuff.<br>Your Purchases:";
@@ -156,35 +122,30 @@ function confirm_email($user,$products) {
 /*
  * Builds the string to display the products and info in the user's cart.
  */
-function build_out_cart($cart=NULL,$products){
+function build_out_cart($cart = NULL, $products){
 
     $out_cart = '';
     $total = 0;
 
-if ($cart) {
-    foreach ($cart as $key => $value) {
-        $product = $products[$key];
+    if ($cart) {
+        foreach ($cart as $key => $value) {
+            $product = $products[$key];
 
-        $out_cart .= '<tr><td class="checkout_name">' . $product['name'] . '</td><td class="checkout_quantity">' . $cart[$key]['quantity'] . '</td><td class="checkout_price">$' . $product['price'] * intval($cart[$key]['quantity']) . '.00</td></tr>';
-        $total += $product['price'] * intval($cart[$key]['quantity']);
+            $out_cart .= '<tr><td class="checkout_name">' . $product['name'] . '</td><td class="checkout_quantity">' . $cart[$key]['quantity'] . '</td><td class="checkout_price">$' . $product['price'] * intval($cart[$key]['quantity']) . '.00</td></tr>';
+            $total += $product['price'] * intval($cart[$key]['quantity']);
+        }
 
+        $out_cart .= '</tbody></table><div class="total_price"> Your Total: $' . $total . '.00</div>';
+        return $out_cart;
     }
-
-    $out_cart .= '</tbody></table><div class="total_price"> Your Total: $' . $total . '.00</div>';
-    return $out_cart;
 }
-}
-
-
-
 
 #----------------------#
 # Functions  index     #
 #----------------------#
 
 /*
- * @param $product
- * pulls the "properties" of the product arrays into a string to build the html for the display of the products
+ * Pulls the "properties" of the product arrays into a string to build the html for the display of the products
  *
  *  $item is the product being processed and $products is the array of products in products.php.s
  */
@@ -212,18 +173,45 @@ function display($item,$products){
 
 };
 
+// Grabs the items out of the cart and gets their relevant details from the array in products.php which it then pushes
+// into the "out cart" which will be used to create the shopping cart page.
+
+function add_to_cart($products,$item,$quantity){
+
+    $item = $item;
+    $products = $products;
+    $_SESSION['out_cart'][$item]['name'] = $item;
+    $_SESSION['out_cart'][$item]['quantity'] = $quantity;
+    $url = "http://" . $_SERVER['HTTP_HOST'] . "/final_cart/index.php";
+    header("Location: " . $url) or die("Didn't work");
+}
+
+// This bit calls the above function. I wanted to put it on the index.php page, so it would be cleaner, but I couldn't
+// figure it out in time. So, you get the below kludge.
+if (isset($_GET['prod_name']) && $_GET['prod_name'] != 1) {
+
+    $item = $_GET['item'];
+    $quantity = $_GET['quantity'];
+    $cart = $_SESSION['cart'];
+
+    if ($_SESSION['sign_in'] == 1) {
+        add_to_cart($products, $item, $quantity);
+        $url = "http://" . $_SERVER['HTTP_HOST'] . "/final_cart/index.php";
+        header("Location: " . $url) or die("Didn't work");
+    } else {
+
+        $url = "http://" . $_SERVER['HTTP_HOST'] . "/final_cart/index.php?signed=0";
+        header("Location: " . $url) or die("Didn't work");
+    }
+}
 
 #----------------------#
-# Functions  login     #
+# Functions login      #
 #----------------------#
 
 // This function inserts a new "account" into the accounts.txt file. This is how I keep track of login credentials.
-// Basically, it implodes the values into a string and then writes it to the file accounts.txt. NOTE: The accounts.txt
-// file must be primed with a blank line at the end of the file to avoid writing the new data on the end of the same
-// line as the previous user's data. I know there's a lot of more clever stuff I could do to handle that
-// automatically (or at least more robustly) but I didn't think it was worth it for this "simple" implementation.
+// Basically, it implodes the values into a string and then writes it to the file accounts.txt.
 function new_user($user,$pass,$email) {
-
 
     $n_user = $user;
 
@@ -243,12 +231,13 @@ function new_user($user,$pass,$email) {
     fclose($users_list);
 }
 
-
+// Builds the new user registration form. Different states are for form validation. If any of the session variable
+// "valid" properties are set,it displays the correct error message.
 function register_display($session) {
 
-if (isset($session['valid']['name']) && $session['valid']['name'] == 'name_error' ) {
+    if (isset($session['valid']['name']) && $session['valid']['name'] == 'name_error' ) {
 
-       $register_display =  '<form name="register" action="index.php?new_user=1" method="POST">
+        $register_display =  '<form name="register" action="index.php?new_user=1" method="POST">
              <input type="text" size="20" name="username">
               <label for="username"><span class="form_error">Please enter a valid username.</span></label><br />
              <input type="text" size="20" name="email">
@@ -257,11 +246,10 @@ if (isset($session['valid']['name']) && $session['valid']['name'] == 'name_error
              <label for="password">Enter your password</label><br/>
              <input type="submit" value="Click to register!">
            </form>';
-
     }
 
-elseif(isset($session['valid']['email']) && $session['valid']['email'] == 'email_error' ) {
-    $register_display =  '<form name="register" action="index.php?new_user=1" method="POST">
+    elseif(isset($session['valid']['email']) && $session['valid']['email'] == 'email_error' ) {
+        $register_display =  '<form name="register" action="index.php?new_user=1" method="POST">
              <input type="text" size="20" name="username">
               <label for="username">Enter your name</label><br />
              <input type="text" size="20" name="email">
@@ -271,10 +259,10 @@ elseif(isset($session['valid']['email']) && $session['valid']['email'] == 'email
              <input type="submit" value="Click to register!">
            </form>';
 
-}
+    }
 
-elseif(isset($session['valid']['password']) && $session['valid']['password'] == 'password_error' ) {
-    $register_display =  '<form name="register" action="index.php?new_user=1" method="POST">
+    elseif(isset($session['valid']['password']) && $session['valid']['password'] == 'password_error' ) {
+        $register_display =  '<form name="register" action="index.php?new_user=1" method="POST">
              <input type="text" size="20" name="username">
               <label for="username">Enter your name</label><br />
              <input type="text" size="20" name="email">
@@ -283,8 +271,8 @@ elseif(isset($session['valid']['password']) && $session['valid']['password'] == 
              <label for="password"><span class="form_error">Please enter a valid password.</span></label><br/>
              <input type="submit" value="Click to register!">
            </form>';
+    }
 
-}
     else {
         $register_display = '<form name="register" action="index.php?new_user=1" method="POST">
              <input type="text" size="20" name="username">
@@ -308,18 +296,14 @@ elseif(isset($session['valid']['password']) && $session['valid']['password'] == 
 // it then iterates through the same line again looking for the password. If both are found, the user is
 // logged in. If the password isn't found, it suggests you try again. If the user isn't found, it displays
 // the registration form.
-function user_cred($username,$pw,$query=array()) {
+function user_cred($query=array()) {
     $user_info = $query;
-
 
     // Form validation and processing. If the new_user variable is set, test the form inputs and then process.
     if(isset($_GET['new_user']) && $_GET['new_user'] ==1){
-
-
         $name_test = $user_info['username'];
 
-
-       if ($name_test != null && $name_test != '') {
+        if ($name_test != null && $name_test != '') {
            $user_name = $name_test;
        }
 
@@ -345,7 +329,7 @@ function user_cred($username,$pw,$query=array()) {
 
         }
 
-        $user_pw = $_POST['password'];
+        $user_pw = $user_info['password'];
         if ($user_pw == null or !isset($user_pw)){
             $_SESSION['valid']['password'] = 'password_error';
 
@@ -373,18 +357,14 @@ function user_cred($username,$pw,$query=array()) {
     for ($i = 0; $i < count($user_list); $i++){
         $line = explode(",",$user_list[$i]);
 
-
         for ($c = 0; $c < count($line); $c++) {
             $user_match =  preg_match('/^' . $username . '$/', $line[$c], $matches);
-
-
 
             if ($matches) {
 
                 for ($p = 0; $p < count($line); $p++) {
 
                    $pw_match =  password_verify($pw, $line[2]);
-
 
                     if ($pw_match) {
                         $_SESSION['sign_in'] = 1;
@@ -393,16 +373,17 @@ function user_cred($username,$pw,$query=array()) {
                         ob_clean();
                         header("Location: " . $url) or die("didn't redirect from login");
 
+                    }
 
-                    } elseif ($matches && $pw_match == false) {
+                    elseif ($matches && $pw_match == false) {
                        if($pass_error == 1)
                         echo '<span class="form_error">The password you entered is not correct</span>';
                         $pass_error++;
-
-
                     }
                 }
-            } elseif (!$matches) {
+            }
+
+            elseif (!$matches) {
                 if ($reg_link == 1) break;
                 echo '<div>Not registered? Click <a href="index.php?register_new=1">here</a> to register.</div>';
                 $reg_link++; // Increments counter to control the number of times the above verbiage and link are displayed.
@@ -410,8 +391,4 @@ function user_cred($username,$pw,$query=array()) {
             }
         }
     }
-
-
-    //TODO: THis is probably not needed. Remove once verified not needed or remove this TODO
-    return $_POST;
 }

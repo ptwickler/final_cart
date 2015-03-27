@@ -1,10 +1,11 @@
 <?php
 
 /*
- * The index page controls the user's path through the site. There are two different "modes" which will cause the
+ * The index page controls the user's path through the site. There are three different "modes" which will cause the
  * page to display differently. First, the "normal" mode which is a user is either signed in, or not, but has not
  * selected that they want to check out (products are displayed). Second, "checkout" mode. The user must be signed in to
  * click the checkout button. If selected, the products are not displayed, but the user's items for purchase are.
+ * Thirdly, "register_new" mode. It displays the products, but also displays the registration form.
  */
 
 ob_start();
@@ -49,11 +50,6 @@ if (!isset($_SESSION['valid'])) {
     $_SESSION['valid'] = array();
 }
 
-
-/*if(isset($_SESSION['out_cart'])) {
-    $item = $_SESSION['out_cart'];
-}*/
-
 include_once($_SERVER['DOCUMENT_ROOT'] ."/final_cart/template_top.inc");
 
 
@@ -65,7 +61,7 @@ $current_products = array('amethyst','quartzorb','wizard','catseye','dragon','el
 // login.
 if (isset($_POST['username']) && isset($_POST['password'])) {
 
-    user_cred($_POST['username'],$_POST['password'],$_POST);
+    user_cred($_POST);
 
 }
 
@@ -78,6 +74,7 @@ if (isset($_GET['register_new']) && $_GET['register_new'] == 1) {
     echo $register_display;
 }
 
+// This puts the site into "checkout mode".
 if (isset($_GET['checkout']) && $_GET['checkout'] ==1 ){
     $items = $_SESSION['out_cart'];
     $out_table = build_out_cart($items,$products);
