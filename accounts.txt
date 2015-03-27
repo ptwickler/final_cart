@@ -1,1 +1,2 @@
-peter,peter.twickler@gmail.com,$2y$10$zlFJMiKLo/jNOWsURibz4u.ZCKa/ETiQTT5zH4VqxH.Nyio/a7fVW
+peter,peter.twickler@gmail.com,12
+dave,pold@pod.com,pass

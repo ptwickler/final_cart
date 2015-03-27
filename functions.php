@@ -337,7 +337,7 @@ function user_cred($query=array()) {
             header("Location: " . $url) or die("didn't redirect from login");
         }
 
-        new_user($user_name,$user_email,password_hash($user_pw,PASSWORD_DEFAULT));
+        new_user($user_name,$user_email,$user_pw);
 
         ob_clean();
         $url = "http://" . $_SERVER['HTTP_HOST'] . "/final_cart/index.php";
@@ -364,7 +364,11 @@ function user_cred($query=array()) {
 
                 for ($p = 0; $p < count($line); $p++) {
 
-                   $pw_match =  password_verify($pw, $line[2]);
+                    for ($p = 0; $p < count($line); $p++) {
+
+                        $pw_match = preg_match('/^' . $pw . '$/', $line[$p], $match);
+
+                    }
 
                     if ($pw_match) {
                         $_SESSION['sign_in'] = 1;
