@@ -182,7 +182,7 @@ function add_to_cart($products,$item,$quantity){
     $products = $products;
     $_SESSION['out_cart'][$item]['name'] = $item;
     $_SESSION['out_cart'][$item]['quantity'] = $quantity;
-    $url = "http://" . $_SERVER['HTTP_HOST'] . "/final_cart/index.php";
+    $url = "http://" . $_SERVER['HTTP_HOST'] . "/refactor/index.php";
     header("Location: " . $url) or die("Didn't work");
 }
 
@@ -196,11 +196,11 @@ if (isset($_GET['prod_name']) && $_GET['prod_name'] != 1) {
 
     if ($_SESSION['sign_in'] == 1) {
         add_to_cart($products, $item, $quantity);
-        $url = "http://" . $_SERVER['HTTP_HOST'] . "/final_cart/index.php";
+        $url = "http://" . $_SERVER['HTTP_HOST'] . "/refactor/index.php";
         header("Location: " . $url) or die("Didn't work");
     } else {
 
-        $url = "http://" . $_SERVER['HTTP_HOST'] . "/final_cart/index.php?signed=0";
+        $url = "http://" . $_SERVER['HTTP_HOST'] . "/refactor/index.php?signed=0";
         header("Location: " . $url) or die("Didn't work");
     }
 }
@@ -218,7 +218,7 @@ function new_user($user,$pass,$email) {
     $n_pass = $pass;
     $n_email = $email;
 
-    $users_list = fopen('/Library/WebServer/Documents/final_cart/accounts.txt','a+');
+    $users_list = fopen('/Library/WebServer/Documents/refactor/accounts.txt','a+');
 
     $user_values = array($n_user,$n_pass,$n_email);
 
@@ -233,9 +233,9 @@ function new_user($user,$pass,$email) {
 
 // Builds the new user registration form. Different states are for form validation. If any of the session variable
 // "valid" properties are set,it displays the correct error message.
-function register_display($session) {
+function register_display($token = null){
 
-    if (isset($session['valid']['name']) && $session['valid']['name'] == 'name_error' ) {
+    if (isset($token['username']) && $token['username'] == 0) {
 
         $register_display =  '<form name="register" action="index.php?new_user=1" method="POST">
              <input type="text" size="20" name="username">
@@ -248,7 +248,7 @@ function register_display($session) {
            </form>';
     }
 
-    elseif(isset($session['valid']['email']) && $session['valid']['email'] == 'email_error' ) {
+    elseif(isset($token['email']) && $token['email'] == 0) {
         $register_display =  '<form name="register" action="index.php?new_user=1" method="POST">
              <input type="text" size="20" name="username">
               <label for="username">Enter your name</label><br />
@@ -261,7 +261,7 @@ function register_display($session) {
 
     }
 
-    elseif(isset($session['valid']['password']) && $session['valid']['password'] == 'password_error' ) {
+    elseif(isset($token['password']) && $token['password'] == 0 ) {
         $register_display =  '<form name="register" action="index.php?new_user=1" method="POST">
              <input type="text" size="20" name="username">
               <label for="username">Enter your name</label><br />
@@ -273,7 +273,7 @@ function register_display($session) {
            </form>';
     }
 
-    else {
+    elseif ($token == 1 || $token == null) {
         $register_display = '<form name="register" action="index.php?new_user=1" method="POST">
              <input type="text" size="20" name="username">
               <label for="name">Enter your name</label><br />
@@ -287,8 +287,65 @@ function register_display($session) {
     return $register_display;
 }
 
+// Validates the new user registration form. Returns either an array with the errors found or a 1 if it's all good.
+function register_validation($query=array()){
+    $report = array();
+    $name_test = $query['username'];
+
+    if ($name_test != null && $name_test != '') {
+       $report['username'] = 1;
+    }
+
+
+    elseif (($name_test == '' || $name_test == null)) {
+       $report['username'] = 0;
+       /* $url = "http://" . $_SERVER['HTTP_HOST'] . "/refactor/index.php?register_new=1";
+        header("Location: " . $url) or die("didn't redirect from login");*/
+    }
+
+    $user_email = $query['email'];
+    if ($user_email && $user_email != null) {
+        $email_test = filter_var($user_email, FILTER_VALIDATE_EMAIL);
+        if ($email_test == true){
+            $report['email'] = 1;
+        }
+        elseif($email_test != true || $user_email == null) {
+            $report['email'] = 0;
+        }
+    }
+
+    $user_pw = $query['password'];
+    if ($user_pw == null or !isset($user_pw)){
+       $report['password'] = 0;
+
+    }
+
+    else {
+        $report['password'] = 1;
+    }
+
+    foreach($report as $key=>$value){
+        if ($report[$key] == 0){
+            $error_token = 0;
+        }
+
+        elseif($report[$key] == 1) {
+            $error_token = 1;
+        }
+
+    }
+
+    if ($error_token == 0) {
+        return $report;
+    }
+
+    elseif($error_token = 1){
+        return 1;
+    }
+}
+
 /*
- * @param Takes $_POST['username'] and $_POST['password']
+ * @param Takes POST.
  */
 // If the user has submitted the login form, iterate through the records in accounts.txt.
 // The nested for loops iterate first through the file, line by line, and then the first nested for loop
@@ -299,99 +356,78 @@ function register_display($session) {
 function user_cred($query=array()) {
     $user_info = $query;
 
-    // Form validation and processing. If the new_user variable is set, test the form inputs and then process.
-    if(isset($_GET['new_user']) && $_GET['new_user'] ==1){
-        $name_test = $user_info['username'];
 
-        if ($name_test != null && $name_test != '') {
-           $user_name = $name_test;
-       }
+   // START MODDED CODE INTO REGISTER_VALIDATION
+       // Form validation and processing. If the new_user variable is set, test the form inputs and then process.
+    if(isset($_POST['new_user']) && $_POST['new_user'] ==1) {
+        $registration = gettype(register_validation($user_info));
 
-       // I have set $user_info to the query (POST) and so now I pass that along instead of the $_POST. I hope to
-       // avoid confusion by doing so. Whether or not the $_POST['email'] property is set is the test for distinguishing
-       // the regular non-validation path from the form validation path.
-       elseif (($name_test == '' || $name_test == null) && isset($_POST['email'])) {
-           $_SESSION['valid']['name'] = 'name_error';
-           $url = "http://" . $_SERVER['HTTP_HOST'] . "/final_cart/index.php?register_new=1";
-           header("Location: " . $url) or die("didn't redirect from login");
-        }
+    }
 
-        $user_email = $_POST['email'];
-        if ($user_email && $user_email != null) {
-            $email_check = filter_var($user_email, FILTER_VALIDATE_EMAIL);
-        }
-
-        if($user_email == null || $email_check != true){
-            $_SESSION['valid']['email'] = 'email_error';
-
-            $url = "http://" . $_SERVER['HTTP_HOST'] . "/final_cart/index.php?register_new=1";
-            header("Location: " . $url) or die("didn't redirect from login");
-
-        }
-
+    // If register_validation == 1, the info's good so push that user's info to the accounts.txt file. Then redirect
+    // back to the index.php.
+    if ($registration == 'integer') {
+        $user_name = $user_info['username'];
+        $user_email =  $user_info['email'];
         $user_pw = $user_info['password'];
-        if ($user_pw == null or !isset($user_pw)){
-            $_SESSION['valid']['password'] = 'password_error';
-
-            $url = "http://" . $_SERVER['HTTP_HOST'] . "/final_cart/index.php?register_new=1";
-            header("Location: " . $url) or die("didn't redirect from login");
-        }
-
         new_user($user_name,$user_email,$user_pw);
 
         ob_clean();
-        $url = "http://" . $_SERVER['HTTP_HOST'] . "/final_cart/index.php";
+        $url = "http://" . $_SERVER['HTTP_HOST'] . "/refactor/index.php";
         header("Location: " . $url) or die("didn't redirect from login");
     }
 
-    $username = $_POST['username'];
+    elseif($registration = 'array') {
+        register_display($registration);
 
-    $pw = $_POST['password'];
+    }
 
-    $reg_link = 0; // Counter to limit the display of the "register here" verbiage.
-    $pass_error = 0;
+    if (isset($_GET['login']) && $_GET['login'] == 1) {
+        $username = $_POST['username'];
 
-    $user_list = file('/Library/WebServer/Documents/final_cart/accounts.txt');
+        $pw = $_POST['password'];
 
-    // Iterates through the file testing each line for the username and password combo.
-    for ($i = 0; $i < count($user_list); $i++){
-        $line = explode(",",$user_list[$i]);
+        $reg_link = 0; // Counter to limit the display of the "register here" verbiage.
+        $pass_error = 0;
 
-        for ($c = 0; $c < count($line); $c++) {
-            $user_match =  preg_match('/^' . $username . '$/', $line[$c], $matches);
+        $user_list = file('/Library/WebServer/Documents/refactor/accounts.txt');
 
-            if ($matches) {
+        // Iterates through the file testing each line for the username and password combo.
+        for ($i = 0; $i < count($user_list); $i++) {
+            $line = explode(",", $user_list[$i]);
 
-                for ($p = 0; $p < count($line); $p++) {
+            for ($c = 0; $c < count($line); $c++) {
+                $user_match = preg_match('/^' . $username . '$/', $line[$c], $matches);
+
+                if ($matches) {
 
                     for ($p = 0; $p < count($line); $p++) {
 
-                        $pw_match = preg_match('/^' . $pw . '$/', $line[$p], $match);
+                        for ($p = 0; $p < count($line); $p++) {
 
+                            $pw_match = preg_match('/^' . $pw . '$/', $line[$p], $match);
+
+                        }
+
+                        if ($pw_match) {
+                            $_SESSION['sign_in'] = 1;
+                            $_SESSION['username'] = $username;
+                            $url = "http://" . $_SERVER['HTTP_HOST'] . "/refactor/index.php";
+                            ob_clean();
+                            header("Location: " . $url) or die("didn't redirect from login");
+
+                        } elseif ($matches && $pw_match == false) {
+                            if ($pass_error == 1)
+                                echo '<span class="form_error">The password you entered is not correct</span>';
+                            $pass_error++;
+                        }
                     }
+                } elseif (!$matches) {
+                    if ($reg_link == 1) break;
+                    echo '<div>Not registered? Click <a href="index.php?register_new=1">here</a> to register.</div>';
+                    $reg_link++; // Increments counter to control the number of times the above verbiage and link are displayed.
 
-                    if ($pw_match) {
-                        $_SESSION['sign_in'] = 1;
-                        $_SESSION['username'] = $username;
-                        $url = "http://" . $_SERVER['HTTP_HOST'] . "/final_cart/index.php";
-                        ob_clean();
-                        header("Location: " . $url) or die("didn't redirect from login");
-
-                    }
-
-                    elseif ($matches && $pw_match == false) {
-                       if($pass_error == 1)
-                        echo '<span class="form_error">The password you entered is not correct</span>';
-                        $pass_error++;
-                    }
                 }
-            }
-
-            elseif (!$matches) {
-                if ($reg_link == 1) break;
-                echo '<div>Not registered? Click <a href="index.php?register_new=1">here</a> to register.</div>';
-                $reg_link++; // Increments counter to control the number of times the above verbiage and link are displayed.
-
             }
         }
     }

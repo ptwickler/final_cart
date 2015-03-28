@@ -33,7 +33,7 @@ if (isset($_GET['out']) && $_GET['out']==1){
 
     //Add in a page reload so that the session_destroy() will take effect
 
-    $url = "http://" . $_SERVER['HTTP_HOST'] . "/final_cart/index.php";
+    $url = "http://" . $_SERVER['HTTP_HOST'] . "/refactor/index.php";
 
     header("Location: ".$url) or die("Didn't work");
 }
@@ -50,7 +50,7 @@ if (!isset($_SESSION['valid'])) {
     $_SESSION['valid'] = array();
 }
 
-include_once($_SERVER['DOCUMENT_ROOT'] ."/final_cart/template_top.inc");
+include_once($_SERVER['DOCUMENT_ROOT'] ."/refactor/template_top.inc");
 
 
 // This array stores the machine names of the products. It needs to be appended if you want to add another
@@ -59,7 +59,8 @@ $current_products = array('amethyst','quartzorb','wizard','catseye','dragon','el
 
 // This if statement tests for the username and passwords in the POST variable. If they are there, it activates the
 // login.
-if (isset($_POST['username']) && isset($_POST['password'])) {
+if (isset($_GET['login']) && $_GET['login'] == 1) {
+
 
     user_cred($_POST);
 
@@ -69,7 +70,7 @@ if (isset($_POST['username']) && isset($_POST['password'])) {
 // submissions of the login form also trigger the register form display.
 if (isset($_GET['register_new']) && $_GET['register_new'] == 1) {
 
-    $register_display = register_display($_SESSION);
+    $register_display = register_display();
 
     echo $register_display;
 }

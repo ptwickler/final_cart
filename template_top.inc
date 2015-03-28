@@ -46,11 +46,12 @@ echo '<div class="banner">
       </div><!--end div.banner-->
 
 <div class="login">
-    <form class="login" action="index.php" method="POST">
+    <form class="login" action="index.php?login=1" method="POST">
         <label for="username">Name</label><br>
         <input class="login" type="text" size="20" name="username"/><br>
         <label for="password" class ="login">Password</label><br>
         <input type="password" class="login" name="password" size="20"><br>
+        <input type="text" hidden value="1" name="">
         <input type="submit" value="Sign In">
     </form>
 
