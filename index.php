@@ -28,8 +28,8 @@ if (isset($_GET['out']) && $_GET['out']==1){
     }
 // END POACHED CODE
 
-    // Finally, destroy the session.
-    session_destroy();
+        // Finally, destroy the session.
+        session_destroy();
 
     //Add in a page reload so that the session_destroy() will take effect
 
@@ -72,6 +72,11 @@ if (isset($_GET['register_new']) && $_GET['register_new'] == 1) {
 
     $register_display = register_display();
 
+    echo $register_display;
+}
+
+elseif(isset($_GET['new_user']) && $_GET['new_user'] == 1){
+    $register_display = register_display($_POST);
     echo $register_display;
 }
 

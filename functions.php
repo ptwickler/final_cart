@@ -171,7 +171,7 @@ function display($item,$products){
 
     return $product_display;
 
-};
+}
 
 // Grabs the items out of the cart and gets their relevant details from the array in products.php which it then pushes
 // into the "out cart" which will be used to create the shopping cart page.
@@ -249,6 +249,7 @@ function register_display($token = null){
     }
 
     elseif(isset($token['email']) && $token['email'] == 0) {
+
         $register_display =  '<form name="register" action="index.php?new_user=1" method="POST">
              <input type="text" size="20" name="username">
               <label for="username">Enter your name</label><br />
@@ -288,26 +289,30 @@ function register_display($token = null){
 }
 
 // Validates the new user registration form. Returns either an array with the errors found or a 1 if it's all good.
-function register_validation($query=array()){
+function register_validation($query){
     $report = array();
+
     $name_test = $query['username'];
 
     if ($name_test != null && $name_test != '') {
        $report['username'] = 1;
+
     }
 
 
     elseif (($name_test == '' || $name_test == null)) {
        $report['username'] = 0;
-       /* $url = "http://" . $_SERVER['HTTP_HOST'] . "/refactor/index.php?register_new=1";
-        header("Location: " . $url) or die("didn't redirect from login");*/
+
     }
 
     $user_email = $query['email'];
+
     if ($user_email && $user_email != null) {
         $email_test = filter_var($user_email, FILTER_VALIDATE_EMAIL);
+
         if ($email_test == true){
             $report['email'] = 1;
+
         }
         elseif($email_test != true || $user_email == null) {
             $report['email'] = 0;
@@ -324,22 +329,24 @@ function register_validation($query=array()){
         $report['password'] = 1;
     }
 
-    foreach($report as $key=>$value){
-        if ($report[$key] == 0){
-            $error_token = 0;
-        }
+    // I'll push the results of the validation tests to this array. Then, I'll add up the numbers.
+    // If they add up to < 3, then there is a problem and I'll return the array that we tested to register_display, to
+    // display error messages, otherwise, I'll return 1 to say the form was good as submitted.
 
-        elseif($report[$key] == 1) {
-            $error_token = 1;
-        }
+print_r($report);
+    exit;
+
+    $tally = 0;
+    foreach($report as $key=>$value){
+       $tally += $report[$key];
 
     }
 
-    if ($error_token == 0) {
+    if ($tally < 3) {
         return $report;
     }
 
-    elseif($error_token = 1){
+    elseif($tally == 3){
         return 1;
     }
 }
@@ -359,28 +366,30 @@ function user_cred($query=array()) {
 
    // START MODDED CODE INTO REGISTER_VALIDATION
        // Form validation and processing. If the new_user variable is set, test the form inputs and then process.
-    if(isset($_POST['new_user']) && $_POST['new_user'] ==1) {
-        $registration = gettype(register_validation($user_info));
+    if(isset($_GET['new_user']) && $_GET['new_user'] ==1) {
+        $registration = register_validation($user_info);
+        // If register_validation == 1, the info's good so push that user's info to the accounts.txt file. Then redirect
+        // back to the index.php.
+        if ($registration == 1) {
+
+            $user_name = $user_info['username'];
+            $user_email =  $user_info['email'];
+            $user_pw = $user_info['password'];
+            new_user($user_name,$user_email,$user_pw);
+
+            ob_clean();
+            $url = "http://" . $_SERVER['HTTP_HOST'] . "/refactor/index.php";
+            header("Location: " . $url) or die("didn't redirect from login");
+        }
+
+        elseif ($registration != 1) {
+            register_display($user_info);
+
+        }
 
     }
 
-    // If register_validation == 1, the info's good so push that user's info to the accounts.txt file. Then redirect
-    // back to the index.php.
-    if ($registration == 'integer') {
-        $user_name = $user_info['username'];
-        $user_email =  $user_info['email'];
-        $user_pw = $user_info['password'];
-        new_user($user_name,$user_email,$user_pw);
 
-        ob_clean();
-        $url = "http://" . $_SERVER['HTTP_HOST'] . "/refactor/index.php";
-        header("Location: " . $url) or die("didn't redirect from login");
-    }
-
-    elseif($registration = 'array') {
-        register_display($registration);
-
-    }
 
     if (isset($_GET['login']) && $_GET['login'] == 1) {
         $username = $_POST['username'];
